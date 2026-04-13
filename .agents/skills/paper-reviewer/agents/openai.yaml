@@ -1,0 +1,5 @@
+interface:
+  display_name: "Paper Reviewer"
+  short_description: "Multi-agent audit workflow for academic papers"
+policy:
+  allow_implicit_invocation: false
