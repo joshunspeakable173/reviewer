@@ -1,0 +1,7 @@
+pymupdf
+pdfplumber
+pandas
+jsonschema
+pydantic
+python-dateutil
+rapidfuzz
