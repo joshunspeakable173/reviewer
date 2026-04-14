@@ -1,0 +1,19 @@
+Use the custom agent named numerical_auditor.
+
+Use the repo guidance and the paper-reviewer skill.
+
+Audit:
+`work/paper1/parsed/`
+
+Return one JSON object that strictly conforms to:
+`schemas/reviewer_output.schema.json`
+
+For this run:
+- reviewer = "numerical_auditor"
+- paper_id = "paper1"
+
+Focus on:
+- numeric claims in text versus tables/figures/appendix
+- sign, scale, units, rounding
+- percentage versus percentage-point distinctions
+- cannot_verify when parsed artifacts are insufficient
