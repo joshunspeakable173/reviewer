@@ -2,8 +2,8 @@ Review this repo as a Codex workflow, not just as a codebase.
 
 Context:
 - This repo is a local Windows/PowerShell project for a multi-agent academic paper reviewer.
-- The manual pipeline has been proven once for `inputs/paper1.pdf`.
-- `scripts/review_paper.py` now exists as the first automated wrapper around that proven flow and has passed an end-to-end smoke test on `paper1`.
+- The manual pipeline has been proven for `inputs/paper1.pdf`.
+- `scripts/review_paper.py` is the automated wrapper around that proven flow and has passed end-to-end smoke tests on both `paper1` and `paper2`.
 - The proven flow is:
   1. preprocess PDF
   2. render run-specific prompts
@@ -27,7 +27,7 @@ Your task:
 1. Check whether the repo still matches the intended workflow design.
 2. Identify anything important that is missing, inconsistent, redundant, or brittle.
 3. Focus especially on:
-   - readiness for `scripts/review_paper.py`
+   - readiness for broader `scripts/review_paper.py` use
    - whether `scripts/review_paper.py` faithfully preserves the proven manual sequence
    - stale-output and partial-rerun risks
    - reviewer prompt quality
@@ -39,8 +39,8 @@ Your task:
 4. Do not change files yet.
 5. Return a short review with:
    - what looks solid
-   - what should be improved before broader wrapper use
+   - what should be improved before heavier wrapper use
    - what should be simplified
-   - whether the project is ready for a single-script wrapper
+   - whether the project is ready to rely on the single-script wrapper as the default path
 
 Be concrete, critical, and repo-specific.

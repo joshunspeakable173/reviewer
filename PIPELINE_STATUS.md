@@ -1,6 +1,6 @@
 # Pipeline Status
 
-This file records what has been built, what has been tested, and what remains before the reviewer workflow should be wrapped in one script.
+This file records what has been built, what has been tested, and what remains for the automated reviewer workflow.
 
 ## Implemented
 
@@ -29,6 +29,7 @@ This file records what has been built, what has been tested, and what remains be
 - The editor generated `outputs/paper1/report.md`.
 - `scripts/check_final_report.py --input outputs/paper1/report.md` passed after the editor report included canonical/source finding traceability.
 - `scripts/review_paper.py --pdf inputs/paper1.pdf --paper-id paper1 --keep-going` passed end to end with parallel reviewer execution.
+- `scripts/review_paper.py` also passed end to end on `paper2`: all five reviewer JSON files validated, `work/paper2/editor/normalized_bundle.json` and `work/paper2/editor/editor_input.md` were produced, the editor generated `outputs/paper2/report.md`, and `scripts/check_final_report.py --input outputs/paper2/report.md` passed.
 
 ## Known Weaknesses
 
@@ -81,11 +82,10 @@ python scripts\check_final_report.py --input outputs\paper1\report.md
 
 ## Remaining Automation Work
 
-- Smoke-test `scripts/review_paper.py` on a second paper after adding another PDF under `inputs/`.
 - Add optional selective rerun/resume flags only after the fresh wrapper is reliable on more than one paper.
 - Consider a sequential-reviewer fallback flag if parallel Codex execution is hard to debug on some runs.
 - Continue improving parser quality, especially page 41 text ordering and conservative figure/table crop boundaries.
 
 ## Wrapper Readiness
 
-The first wrapper exists, preserves the proven manual workflow, and has passed on `paper1`. It should now be tested on a second paper. Parser quality still needs incremental improvement, but it no longer blocks using the wrapper as the default entry point for fresh runs.
+The wrapper exists, preserves the proven manual workflow, and has passed on both `paper1` and `paper2`. Parser quality still needs incremental improvement, and selective rerun/resume support would make repeated runs cheaper, but the wrapper is now the default entry point for fresh runs.
