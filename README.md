@@ -8,7 +8,7 @@ This repo is both:
 
 The goal is not to build a polished product immediately. The goal is to learn a workflow with repo guidance, project-scoped config, custom agents, repo-scoped skills, `codex exec`, JSON schemas, deterministic preprocessing, validation, and editor synthesis.
 
-Current status: the full manual pipeline has been proven once on `inputs/paper1.pdf`. The generated reviewer JSON files validated, the normalized editor bundle was built, the editor produced `outputs/paper1/report.md`, and the final report passed `scripts/check_final_report.py`.
+Current status: the full manual pipeline has been proven once on `inputs/paper1.pdf`, and `scripts/review_paper.py` has passed an end-to-end smoke test on the same paper. The generated reviewer JSON files validated, the normalized editor bundle was built, the editor produced `outputs/paper1/report.md`, and the final report passed `scripts/check_final_report.py`.
 
 ## Mental Model
 
@@ -122,8 +122,6 @@ Current scripts:
 - `normalize_review_outputs.py`
 - `build_editor_input.py`
 - `check_final_report.py`
-
-Future script:
 - `review_paper.py`
 
 ## Environment Assumptions
@@ -144,6 +142,22 @@ git status
 ```
 
 ## Current Best-Practice Manual Workflow
+
+For a fully automated fresh run, use:
+
+```powershell
+python scripts\review_paper.py --pdf inputs\paper2.pdf
+```
+
+This derives `paper_id` from the PDF filename, writes intermediate artifacts under `work/<paper_id>/`, writes the final report to `outputs/<paper_id>/report.md`, and stores subprocess logs under `work/<paper_id>/logs/`.
+
+Use an explicit paper ID when needed:
+
+```powershell
+python scripts\review_paper.py --pdf inputs\paper2.pdf --paper-id paper2
+```
+
+The wrapper currently runs a fresh pipeline and executes the five reviewers in parallel. The manual steps below remain useful for debugging or rerunning one stage by hand.
 
 ### 1. Preprocess
 
@@ -254,7 +268,7 @@ The final report checker rejects reports that are too short, look like run-statu
 - Normalization before editor synthesis is worth doing.
 - Final reports need traceability identifiers, not just readable prose, so findings can be traced back to reviewer outputs.
 - PowerShell `>` redirection is risky for JSON outputs on Windows; prefer `--output-last-message`.
-- The wrapper script should now preserve the proven manual sequence before adding advanced options.
+- The wrapper script preserves the proven manual sequence and runs reviewer jobs in parallel.
 
 ## Git Hygiene
 

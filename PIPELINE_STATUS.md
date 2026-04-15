@@ -15,6 +15,7 @@ This file records what has been built, what has been tested, and what remains be
 - Reviewer normalization/deduplication is implemented in `scripts/normalize_review_outputs.py`.
 - Editor input assembly is implemented in `scripts/build_editor_input.py`.
 - Final report smoke checking is implemented in `scripts/check_final_report.py`.
+- Full pipeline orchestration is implemented in `scripts/review_paper.py`.
 
 ## Smoke-Tested So Far
 
@@ -27,6 +28,7 @@ This file records what has been built, what has been tested, and what remains be
 - `scripts/build_editor_input.py` built `work/paper1/editor/editor_input.md` from the normalized bundle and original reviewer JSON files.
 - The editor generated `outputs/paper1/report.md`.
 - `scripts/check_final_report.py --input outputs/paper1/report.md` passed after the editor report included canonical/source finding traceability.
+- `scripts/review_paper.py --pdf inputs/paper1.pdf --paper-id paper1 --keep-going` passed end to end with parallel reviewer execution.
 
 ## Known Weaknesses
 
@@ -37,6 +39,14 @@ This file records what has been built, what has been tested, and what remains be
 - Generated artifacts under `work/` and `outputs/` are ignored by Git, so successful proof-run outputs must be regenerated or preserved outside Git if needed.
 
 ## Current Best Manual Pipeline
+
+The automated fresh-run entry point is:
+
+```powershell
+python scripts\review_paper.py --pdf inputs\paper2.pdf
+```
+
+It preprocesses, renders prompts, runs the five reviewers in parallel, validates reviewer JSON, normalizes, builds editor input, runs the editor, and smoke-checks the final report.
 
 ```powershell
 python scripts\preprocess_pdf.py --pdf inputs\paper1.pdf
@@ -69,14 +79,13 @@ Get-Content work\paper1\editor\editor_input.md -Raw |
 python scripts\check_final_report.py --input outputs\paper1\report.md
 ```
 
-## Remaining Before Wrapper
+## Remaining Automation Work
 
-- Add `scripts/review_paper.py` to orchestrate the proven manual pipeline.
-- Decide how the wrapper should handle stale or missing reviewer outputs.
-- Decide whether reviewer execution should be sequential by default, with parallel execution as an option.
-- Keep the wrapper conservative: preprocess, render prompts, run reviewers, validate JSON, normalize, build editor input, run editor, then smoke-check the final report.
+- Smoke-test `scripts/review_paper.py` on a second paper after adding another PDF under `inputs/`.
+- Add optional selective rerun/resume flags only after the fresh wrapper is reliable on more than one paper.
+- Consider a sequential-reviewer fallback flag if parallel Codex execution is hard to debug on some runs.
 - Continue improving parser quality, especially page 41 text ordering and conservative figure/table crop boundaries.
 
 ## Wrapper Readiness
 
-The repo is ready to start a single-script wrapper. The deterministic middle layer has been manually proven on `paper1`, including reviewer validation, normalization, editor input assembly, final report generation, and final report smoke checking. Parser quality still needs incremental improvement, but it no longer blocks building the wrapper around the current manual workflow.
+The first wrapper exists, preserves the proven manual workflow, and has passed on `paper1`. It should now be tested on a second paper. Parser quality still needs incremental improvement, but it no longer blocks using the wrapper as the default entry point for fresh runs.
