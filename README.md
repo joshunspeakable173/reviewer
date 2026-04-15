@@ -8,6 +8,8 @@ This repo is both:
 
 The goal is not to build a polished product immediately. The goal is to learn a workflow with repo guidance, project-scoped config, custom agents, repo-scoped skills, `codex exec`, JSON schemas, deterministic preprocessing, validation, and editor synthesis.
 
+Current status: the full manual pipeline has been proven once on `inputs/paper1.pdf`. The generated reviewer JSON files validated, the normalized editor bundle was built, the editor produced `outputs/paper1/report.md`, and the final report passed `scripts/check_final_report.py`.
+
 ## Mental Model
 
 The repo has several layers. They do different jobs.
@@ -230,6 +232,11 @@ Get-Content work\paper1\editor\editor_input.md -Raw |
 ```
 
 The editor must write the actual final markdown report, not a note saying where the report was saved.
+The report must include traceability lines with canonical and source finding IDs, such as:
+
+```markdown
+**Traceability:** CANON-001; source finding(s): claim_evidence_auditor:CEA-005
+```
 
 ### 8. Check Final Report
 
@@ -237,14 +244,17 @@ The editor must write the actual final markdown report, not a note saying where 
 python scripts\check_final_report.py --input outputs\paper1\report.md
 ```
 
+The final report checker rejects reports that are too short, look like run-status notes, omit required headings, or omit canonical/source finding identifiers.
+
 ## Lessons Learned
 
 - Saved prompt templates are better than one-off interactive prompts.
 - Schemas and validation are more reliable than repeated "return JSON only" instructions.
 - The reviewer stage is useful, but the editor needs deterministic help.
 - Normalization before editor synthesis is worth doing.
+- Final reports need traceability identifiers, not just readable prose, so findings can be traced back to reviewer outputs.
 - PowerShell `>` redirection is risky for JSON outputs on Windows; prefer `--output-last-message`.
-- The wrapper script should wait until the manual workflow is stable.
+- The wrapper script should now preserve the proven manual sequence before adding advanced options.
 
 ## Git Hygiene
 

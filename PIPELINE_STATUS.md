@@ -19,18 +19,22 @@ This file records what has been built, what has been tested, and what remains be
 ## Smoke-Tested So Far
 
 - `inputs/paper1.pdf` can be preprocessed into `work/paper1/parsed/`.
-- The five reviewer agents have previously produced schema-valid JSON files for `paper1`.
 - The parser has been tightened so Figure 3 is restored through raw-caption fallback.
 - Cross-reference extraction now suppresses known false positives such as `Appendix p`, `Appendix s`, `table s`, and `figure u`.
 - Page-label inference improved label coverage for `paper1` from empty labels to labels on most pages.
+- The five reviewer agents have produced regenerated schema-valid JSON files for `paper1`.
+- `scripts/normalize_review_outputs.py` built `work/paper1/editor/normalized_bundle.json` from the regenerated reviewer outputs.
+- `scripts/build_editor_input.py` built `work/paper1/editor/editor_input.md` from the normalized bundle and original reviewer JSON files.
+- The editor generated `outputs/paper1/report.md`.
+- `scripts/check_final_report.py --input outputs/paper1/report.md` passed after the editor report included canonical/source finding traceability.
 
 ## Known Weaknesses
 
-- Existing reviewer outputs under `work/paper1/reviews/` were produced before the latest parser changes and should be regenerated before trusting a new final report.
 - Page 41 still has scrambled normalized sorted text, even though Figure 3 is recovered from raw text.
 - Raw-caption fallback crops are conservative because exact caption/body coordinates are not available from raw text.
-- Normalization uses deterministic heuristics; it should be inspected after the next reviewer rerun.
-- The editor previously wrote a status note instead of a substantive report. `check_final_report.py` now exists to catch that failure mode.
+- Normalization uses deterministic heuristics and should be revisited as more papers are tested.
+- The first successful-looking editor report omitted canonical/source finding IDs and failed the final report check. The editor prompt template now requires traceability lines.
+- Generated artifacts under `work/` and `outputs/` are ignored by Git, so successful proof-run outputs must be regenerated or preserved outside Git if needed.
 
 ## Current Best Manual Pipeline
 
@@ -67,13 +71,12 @@ python scripts\check_final_report.py --input outputs\paper1\report.md
 
 ## Remaining Before Wrapper
 
-- Rerun all five reviewers against the updated parsed artifacts.
-- Validate all five regenerated reviewer JSON outputs.
-- Inspect `normalized_bundle.json` to confirm grouping and issue-class assignment are useful.
-- Rerun the editor from `editor_input.md`.
-- Confirm `outputs/paper1/report.md` passes `check_final_report.py` and is substantively useful.
-- Only then add `scripts/review_paper.py` to orchestrate the full pipeline.
+- Add `scripts/review_paper.py` to orchestrate the proven manual pipeline.
+- Decide how the wrapper should handle stale or missing reviewer outputs.
+- Decide whether reviewer execution should be sequential by default, with parallel execution as an option.
+- Keep the wrapper conservative: preprocess, render prompts, run reviewers, validate JSON, normalize, build editor input, run editor, then smoke-check the final report.
+- Continue improving parser quality, especially page 41 text ordering and conservative figure/table crop boundaries.
 
 ## Wrapper Readiness
 
-The repo is close, but not ready for a single-script wrapper yet. The deterministic middle layer now exists, but it still needs one full manual proof run after the parser and prompt-template changes.
+The repo is ready to start a single-script wrapper. The deterministic middle layer has been manually proven on `paper1`, including reviewer validation, normalization, editor input assembly, final report generation, and final report smoke checking. Parser quality still needs incremental improvement, but it no longer blocks building the wrapper around the current manual workflow.

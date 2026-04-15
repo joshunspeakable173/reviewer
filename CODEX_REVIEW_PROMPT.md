@@ -2,36 +2,42 @@ Review this repo as a Codex workflow, not just as a codebase.
 
 Context:
 - This repo is a local Windows/PowerShell project for a multi-agent academic paper reviewer.
-- The intended flow is:
+- The manual pipeline has been proven once for `inputs/paper1.pdf`.
+- The proven flow is:
   1. preprocess PDF
-  2. run five reviewer agents
-  3. validate reviewer JSON
-  4. normalize/deduplicate reviewer outputs
-  5. run the editor
-  6. write the final markdown report
+  2. render run-specific prompts
+  3. run five reviewer agents
+  4. validate reviewer JSON
+  5. normalize/deduplicate reviewer outputs
+  6. build editor input
+  7. run the editor
+  8. write the final markdown report
+  9. smoke-check the final report
 - The repo uses:
-  - AGENTS.md for repo-wide guidance
-  - .codex/config.toml for project defaults
-  - .codex/agents/*.toml for custom reviewer agents
-  - .agents/skills/paper-reviewer/SKILL.md for the workflow skill
-  - prompts/*.txt for run-specific prompt files
-  - schemas/*.json for structured-output contracts
-  - scripts/*.py for deterministic pipeline steps
+  - `AGENTS.md` for repo-wide guidance
+  - `.codex/config.toml` for project defaults
+  - `.codex/agents/*.toml` for custom reviewer/editor definitions
+  - `.agents/skills/paper-reviewer/SKILL.md` for the workflow skill
+  - `prompts/templates/*.txt` for reusable prompt templates
+  - `schemas/*.json` for structured-output contracts
+  - `scripts/*.py` for deterministic pipeline steps
 
 Your task:
-1. Check whether the repo actually matches that intended design.
+1. Check whether the repo still matches the intended workflow design.
 2. Identify anything important that is missing, inconsistent, redundant, or brittle.
 3. Focus especially on:
+   - readiness for `scripts/review_paper.py`
+   - stale-output and partial-rerun risks
    - reviewer prompt quality
    - schema/output stability
    - preprocessing/parser weaknesses
-   - whether normalization/deduplication is implemented cleanly
-   - whether the editor stage is using the right inputs and producing the real final report
-   - whether the repo structure still matches the mental model in README.md
+   - normalization/deduplication behavior
+   - editor traceability with `CANON-###` and source finding IDs
+   - whether README, pipeline status, prompts, and scripts remain aligned
 4. Do not change files yet.
 5. Return a short review with:
    - what looks solid
-   - what should be improved next
+   - what should be improved before or during wrapper implementation
    - what should be simplified
    - whether the project is ready for a single-script wrapper
 
