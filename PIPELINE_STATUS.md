@@ -24,13 +24,13 @@ This file records what has been built, what has been tested, and what remains fo
 - The parser has been tightened so Figure 3 is restored through raw-caption fallback.
 - Cross-reference extraction now suppresses known false positives such as `Appendix p`, `Appendix s`, `table s`, and `figure u`.
 - Page-label inference improved label coverage for `paper1` from empty labels to labels on most pages.
-- The five reviewer agents have produced regenerated schema-valid JSON files for `paper1`.
+- The default configured reviewer agents have produced regenerated schema-valid JSON files for `paper1`.
 - `scripts/normalize_review_outputs.py` built `work/paper1/editor/normalized_bundle.json` from the regenerated reviewer outputs.
 - `scripts/build_editor_input.py` built `work/paper1/editor/editor_input.md` from the normalized bundle and original reviewer JSON files.
 - The editor generated `outputs/paper1/report.md`.
 - `scripts/check_final_report.py --input outputs/paper1/report.md` passed after the editor report included canonical/source finding traceability.
 - `scripts/review_paper.py --pdf inputs/paper1.pdf --paper-id paper1 --keep-going` passed end to end with parallel reviewer execution.
-- `scripts/review_paper.py` also passed end to end on `paper2`: all five reviewer JSON files validated, `work/paper2/editor/normalized_bundle.json` and `work/paper2/editor/editor_input.md` were produced, the editor generated `outputs/paper2/report.md`, and `scripts/check_final_report.py --input outputs/paper2/report.md` passed.
+- `scripts/review_paper.py` also passed end to end on `paper2`: all default configured reviewer JSON files validated, `work/paper2/editor/normalized_bundle.json` and `work/paper2/editor/editor_input.md` were produced, the editor generated `outputs/paper2/report.md`, and `scripts/check_final_report.py --input outputs/paper2/report.md` passed.
 
 ## Known Weaknesses
 
@@ -40,7 +40,7 @@ This file records what has been built, what has been tested, and what remains fo
 - The first successful-looking editor report omitted canonical/source finding IDs and failed the final report check. The editor prompt template now requires traceability lines.
 - Generated artifacts under `work/` and `outputs/` are ignored by Git, so successful proof-run outputs must be regenerated or preserved outside Git if needed.
 
-## Current Best Manual Pipeline
+## Current Best Workflow
 
 The automated fresh-run entry point is:
 
@@ -89,4 +89,4 @@ python scripts\check_final_report.py --input outputs\paper1\report.md
 
 ## Wrapper Readiness
 
-The wrapper exists, preserves the proven manual workflow, and has passed on both `paper1` and `paper2`. Parser quality still needs incremental improvement, and selective rerun/resume support would make repeated runs cheaper, but the wrapper is now the default entry point for fresh runs.
+The wrapper exists, preserves the proven workflow, and has passed on both `paper1` and `paper2`. Parser quality still needs incremental improvement, and selective rerun/resume support would make repeated runs cheaper, but the wrapper is now the default entry point for fresh runs.

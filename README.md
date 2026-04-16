@@ -8,7 +8,7 @@ This repo is both:
 
 The goal is not to build a polished product immediately. The goal is to learn a workflow with repo guidance, project-scoped config, custom agents, repo-scoped skills, `codex exec`, JSON schemas, deterministic preprocessing, validation, and editor synthesis.
 
-Current status: the full manual pipeline has been proven on `inputs/paper1.pdf`, and `scripts/review_paper.py` has passed end-to-end smoke tests on both `paper1` and `paper2`. The generated reviewer JSON files validated, the normalized editor bundles were built, the editor produced final markdown reports, and the reports passed `scripts/check_final_report.py`.
+Current status: the pipeline was first proven manually on `inputs/paper1.pdf`, and `scripts/review_paper.py` has passed end-to-end smoke tests on both `paper1` and `paper2`. The generated reviewer JSON files validated, the normalized editor bundles were built, the editor produced final markdown reports, and the reports passed `scripts/check_final_report.py`.
 
 ## Mental Model
 
@@ -43,8 +43,10 @@ The intended flow is:
 5. normalize and deduplicate reviewer outputs
 6. build editor input
 7. run the editor
-8. smoke-check the final report
-9. use the wrapper as the default fresh-run entry point
+8. write the final markdown report
+9. smoke-check the final report
+
+For fresh runs, `scripts/review_paper.py` is the default entry point for this flow.
 
 ## Current Repo Layout
 
@@ -114,6 +116,11 @@ work/<paper_id>/prompts/
 ### `config/reviewers.json`
 
 The enabled reviewer roster. Each reviewer entry declares the Codex agent name, prompt template, output filename, whether web search is required, and the normalizer role used during editor-bundle construction.
+
+Valid `normalization_role` values are:
+- `manuscript`: default substantive manuscript findings
+- `crossref`: cross-reference findings, including parser-artifact classification for parser/false-positive categories
+- `reference`: reference-integrity findings, including bibliography-maintenance classification for outdated or metadata-typo categories
 
 ### `schemas/`
 
@@ -278,7 +285,7 @@ The final report checker rejects reports that are too short, look like run-statu
 - Normalization before editor synthesis is worth doing.
 - Final reports need traceability identifiers, not just readable prose, so findings can be traced back to reviewer outputs.
 - PowerShell `>` redirection is risky for JSON outputs on Windows; prefer `--output-last-message`.
-- The wrapper script preserves the proven manual sequence and runs reviewer jobs in parallel.
+- The wrapper script preserves the proven sequence and runs reviewer jobs in parallel.
 - A second-paper smoke test is valuable because it catches stale assumptions that a single proof run can hide; `paper2` now gives the wrapper that broader check.
 
 ## Git Hygiene

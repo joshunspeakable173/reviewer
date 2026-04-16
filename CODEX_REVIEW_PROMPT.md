@@ -2,7 +2,7 @@ Review this repo as a Codex workflow, not just as a codebase.
 
 Context:
 - This repo is a local Windows/PowerShell project for a multi-agent academic paper reviewer.
-- The manual pipeline has been proven for `inputs/paper1.pdf`.
+- The pipeline was first proven manually on `inputs/paper1.pdf`.
 - `scripts/review_paper.py` is the automated wrapper around that proven flow and has passed end-to-end smoke tests on both `paper1` and `paper2`.
 - The proven flow is:
   1. preprocess PDF
@@ -30,13 +30,14 @@ Your task:
 3. Focus especially on:
    - readiness for broader `scripts/review_paper.py` use
    - whether reviewer additions can be made through `config/reviewers.json`
-   - whether `scripts/review_paper.py` faithfully preserves the proven manual sequence
+   - whether `scripts/review_paper.py` faithfully preserves the proven sequence
    - stale-output and partial-rerun risks
    - reviewer prompt quality
    - schema/output stability
    - preprocessing/parser weaknesses
    - normalization/deduplication behavior
    - editor traceability with `CANON-###` and source finding IDs
+   - whether `scripts/check_final_report.py` is being treated as the smoke check it is, not as a full semantic traceability audit
    - whether README, pipeline status, prompts, and scripts remain aligned
 4. Do not change files yet.
 5. Return a short review with:
