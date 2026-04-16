@@ -8,6 +8,7 @@ This file records what has been built, what has been tested, and what remains fo
 - Project Codex defaults exist in `.codex/config.toml`.
 - Custom agents exist under `.codex/agents/`.
 - The enabled reviewer roster is configured in `config/reviewers.json`.
+- The parser-quality auditor runs as a preflight reviewer before substantive reviewers.
 - The repo-scoped paper-reviewer skill exists under `.agents/skills/paper-reviewer/`.
 - PDF preprocessing is implemented in `scripts/preprocess_pdf.py`.
 - Reviewer JSON validation is implemented in `scripts/validate_review_json.py`.
@@ -17,7 +18,7 @@ This file records what has been built, what has been tested, and what remains fo
 - Reviewer normalization/deduplication is implemented in `scripts/normalize_review_outputs.py`.
 - Editor input assembly is implemented in `scripts/build_editor_input.py`.
 - Final report smoke checking is implemented in `scripts/check_final_report.py`.
-- Full pipeline orchestration is implemented in `scripts/review_paper.py`.
+- Full pipeline orchestration is implemented in `scripts/review_paper.py`, including parser-quality preflight gating.
 
 ## Smoke-Tested So Far
 
@@ -32,6 +33,7 @@ This file records what has been built, what has been tested, and what remains fo
 - `scripts/check_final_report.py --input outputs/paper1/report.md` passed after the editor report included canonical/source finding traceability.
 - `scripts/review_paper.py --pdf inputs/paper1.pdf --paper-id paper1 --keep-going` passed end to end with parallel reviewer execution.
 - `scripts/review_paper.py` also passed end to end on `paper2`: all default configured reviewer JSON files validated, `work/paper2/editor/normalized_bundle.json` and `work/paper2/editor/editor_input.md` were produced, the editor generated `outputs/paper2/report.md`, and `scripts/check_final_report.py --input outputs/paper2/report.md` passed.
+- `paper4` exposed parser-quality issues that are now in scope for the dedicated preflight auditor: missing table/figure inventories despite visible Table 1 and Fig. 1, sparse citation inventory, and reference-list contamination.
 
 ## Known Weaknesses
 
@@ -50,6 +52,7 @@ python scripts\review_paper.py --pdf inputs\paper2.pdf
 ```
 
 It preprocesses, renders prompts, runs the configured reviewers in parallel, validates reviewer JSON, normalizes, builds editor input, runs the editor, and smoke-checks the final report.
+The parser-quality auditor runs first and blocks only on high-severity, high-confidence parser artifacts that would make downstream review unsafe.
 
 ```powershell
 python scripts\preprocess_pdf.py --pdf inputs\paper1.pdf
@@ -86,8 +89,8 @@ python scripts\check_final_report.py --input outputs\paper1\report.md
 
 - Add optional selective rerun/resume flags only after the fresh wrapper is reliable on more than one paper.
 - Consider a sequential-reviewer fallback flag if parallel Codex execution is hard to debug on some runs.
-- Continue improving parser quality, especially page 41 text ordering and conservative figure/table crop boundaries.
+- Continue improving parser quality, especially page 41 text ordering, conservative figure/table crop boundaries, and caption forms without colons.
 
 ## Wrapper Readiness
 
-The wrapper exists, preserves the proven workflow, and has passed on both `paper1` and `paper2`. Parser quality still needs incremental improvement, and selective rerun/resume support would make repeated runs cheaper, but the wrapper is now the default entry point for fresh runs.
+The wrapper exists, preserves the proven workflow, and passed on both `paper1` and `paper2` before parser-quality preflight gating was added. Parser quality still needs incremental improvement, and selective rerun/resume support would make repeated runs cheaper, but the wrapper is now the default entry point for fresh runs.
