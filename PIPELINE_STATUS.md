@@ -9,15 +9,19 @@ This file records what has been built, what has been tested, and what remains fo
 - Custom agents exist under `.codex/agents/`.
 - The enabled reviewer roster is configured in `config/reviewers.json`.
 - The parser-quality auditor runs as a preflight reviewer before substantive reviewers.
+- The grammar auditor runs as a review-stage copyedit reviewer and is intended for an appendix table in the final report.
+- The reviewer selector can classify a paper and choose from optional paper-type-specific reviewers while mandatory baseline reviewers always run.
 - The repo-scoped paper-reviewer skill exists under `.agents/skills/paper-reviewer/`.
 - PDF preprocessing is implemented in `scripts/preprocess_pdf.py`.
 - Reviewer JSON validation is implemented in `scripts/validate_review_json.py`.
 - Reviewer validation now includes semantic contract checks for stable IDs, issue type, confidence, location precision, source objects, cannot-verify reasons, and numerical recomputation notes.
 - Reusable reviewer/editor prompt templates live under `prompts/templates/`.
 - Run-specific prompt rendering is implemented in `scripts/render_prompts.py`.
+- Dynamic reviewer selection writes `work/<paper_id>/selection/reviewer_selection.json` and `work/<paper_id>/selection/selected_reviewers.json`.
 - Reviewer normalization/deduplication is implemented in `scripts/normalize_review_outputs.py`.
-- Editor input assembly is implemented in `scripts/build_editor_input.py`.
+- Editor input assembly is implemented in `scripts/build_editor_input.py`, including a deterministic editor brief for active-reviewer disclosure, priority scoring, section routing, and agent-by-agent indexing.
 - Final report smoke checking is implemented in `scripts/check_final_report.py`.
+- Final report smoke checking now requires the grammar appendix heading when normalized copyedit findings are present.
 - Full pipeline orchestration is implemented in `scripts/review_paper.py`, including parser-quality preflight gating.
 
 ## Smoke-Tested So Far
