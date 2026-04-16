@@ -19,9 +19,9 @@ This file records what has been built, what has been tested, and what remains fo
 - Run-specific prompt rendering is implemented in `scripts/render_prompts.py`.
 - Dynamic reviewer selection writes `work/<paper_id>/selection/reviewer_selection.json` and `work/<paper_id>/selection/selected_reviewers.json`.
 - Reviewer normalization/deduplication is implemented in `scripts/normalize_review_outputs.py`.
-- Editor input assembly is implemented in `scripts/build_editor_input.py`, including a deterministic editor brief for active-reviewer disclosure, priority scoring, section routing, and agent-by-agent indexing.
+- Editor input assembly is implemented in `scripts/build_editor_input.py`, including a deterministic editor brief for concise reviewer disclosure, priority scoring with a five-item synthesis cap, additional-finding candidates, section routing, and traceability-map rows.
 - Final report smoke checking is implemented in `scripts/check_final_report.py`.
-- Final report smoke checking now requires the grammar appendix heading when normalized copyedit findings are present.
+- Final report smoke checking now requires the grammar appendix heading when normalized copyedit findings are present and the traceability appendix when a normalized bundle is supplied.
 - Full pipeline orchestration is implemented in `scripts/review_paper.py`, including parser-quality preflight gating.
 
 ## Smoke-Tested So Far
@@ -34,9 +34,9 @@ This file records what has been built, what has been tested, and what remains fo
 - `scripts/normalize_review_outputs.py` built `work/paper1/editor/normalized_bundle.json` from the regenerated reviewer outputs.
 - `scripts/build_editor_input.py` built `work/paper1/editor/editor_input.md` from the normalized bundle and original reviewer JSON files.
 - The editor generated `outputs/paper1/report.md`.
-- `scripts/check_final_report.py --input outputs/paper1/report.md` passed after the editor report included canonical/source finding traceability.
+- `scripts/check_final_report.py --input outputs/paper1/report.md --bundle work/paper1/editor/normalized_bundle.json` passed after the editor report included canonical/source finding traceability.
 - `scripts/review_paper.py --pdf inputs/paper1.pdf --paper-id paper1 --keep-going` passed end to end with parallel reviewer execution.
-- `scripts/review_paper.py` also passed end to end on `paper2`: all default configured reviewer JSON files validated, `work/paper2/editor/normalized_bundle.json` and `work/paper2/editor/editor_input.md` were produced, the editor generated `outputs/paper2/report.md`, and `scripts/check_final_report.py --input outputs/paper2/report.md` passed.
+- `scripts/review_paper.py` also passed end to end on `paper2`: all default configured reviewer JSON files validated, `work/paper2/editor/normalized_bundle.json` and `work/paper2/editor/editor_input.md` were produced, the editor generated `outputs/paper2/report.md`, and `scripts/check_final_report.py --input outputs/paper2/report.md --bundle work/paper2/editor/normalized_bundle.json` passed.
 - `paper4` exposed parser-quality issues that are now in scope for the dedicated preflight auditor: missing table/figure inventories despite visible Table 1 and Fig. 1, sparse citation inventory, and reference-list contamination.
 
 ## Known Weaknesses
@@ -44,7 +44,7 @@ This file records what has been built, what has been tested, and what remains fo
 - Page 41 still has scrambled normalized sorted text, even though Figure 3 is recovered from raw text.
 - Raw-caption fallback crops are conservative because exact caption/body coordinates are not available from raw text.
 - Normalization uses deterministic heuristics and should be revisited as more papers are tested.
-- The first successful-looking editor report omitted canonical/source finding IDs and failed the final report check. The editor prompt template now requires traceability lines.
+- The first successful-looking editor report omitted canonical/source finding IDs and failed the final report check. The editor prompt template now requires a traceability appendix rather than repeated traceability lines.
 - Generated artifacts under `work/` and `outputs/` are ignored by Git, so successful proof-run outputs must be regenerated or preserved outside Git if needed.
 
 ## Current Best Workflow
@@ -86,7 +86,9 @@ python scripts\build_editor_input.py `
 Get-Content work\paper1\editor\editor_input.md -Raw |
   codex exec --output-last-message outputs\paper1\report.md -
 
-python scripts\check_final_report.py --input outputs\paper1\report.md
+python scripts\check_final_report.py `
+  --input outputs\paper1\report.md `
+  --bundle work\paper1\editor\normalized_bundle.json
 ```
 
 ## Remaining Automation Work
