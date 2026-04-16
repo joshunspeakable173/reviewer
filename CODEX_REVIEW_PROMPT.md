@@ -7,7 +7,7 @@ Context:
 - The proven flow is:
   1. preprocess PDF
   2. render run-specific prompts
-  3. run five reviewer agents
+  3. run configured reviewer agents
   4. validate reviewer JSON
   5. normalize/deduplicate reviewer outputs
   6. build editor input
@@ -18,6 +18,7 @@ Context:
   - `AGENTS.md` for repo-wide guidance
   - `.codex/config.toml` for project defaults
   - `.codex/agents/*.toml` for custom reviewer/editor definitions
+  - `config/reviewers.json` for the enabled reviewer roster
   - `.agents/skills/paper-reviewer/SKILL.md` for the workflow skill
   - `prompts/templates/*.txt` for reusable prompt templates
   - `schemas/*.json` for structured-output contracts
@@ -28,6 +29,7 @@ Your task:
 2. Identify anything important that is missing, inconsistent, redundant, or brittle.
 3. Focus especially on:
    - readiness for broader `scripts/review_paper.py` use
+   - whether reviewer additions can be made through `config/reviewers.json`
    - whether `scripts/review_paper.py` faithfully preserves the proven manual sequence
    - stale-output and partial-rerun risks
    - reviewer prompt quality

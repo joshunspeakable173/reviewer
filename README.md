@@ -18,12 +18,14 @@ The repo has several layers. They do different jobs.
 - `.codex/config.toml`: project-level Codex defaults.
 - `.codex/agents/*.toml`: custom reviewer/editor definitions.
 - `.agents/skills/paper-reviewer/SKILL.md`: reusable workflow playbook.
+- `config/reviewers.json`: configured reviewer roster.
 - `prompts/templates/*.txt`: reusable prompt templates.
 - `schemas/*.json`: structured output contracts.
 - `scripts/*.py`: deterministic machinery for preprocessing, validation, normalization, and orchestration.
 
 A useful shorthand:
 - agents = workers
+- reviewer config = roster and run options
 - skills = playbooks
 - schemas = output contracts
 - prompt templates = assignment patterns
@@ -61,6 +63,8 @@ reviewer/
 |   `-- skills/
 |-- inputs/
 |-- outputs/
+|-- config/
+|   `-- reviewers.json
 |-- prompts/
 |   `-- templates/
 |-- schemas/
@@ -107,6 +111,10 @@ Run-specific prompt files are generated under:
 work/<paper_id>/prompts/
 ```
 
+### `config/reviewers.json`
+
+The enabled reviewer roster. Each reviewer entry declares the Codex agent name, prompt template, output filename, whether web search is required, and the normalizer role used during editor-bundle construction.
+
 ### `schemas/`
 
 JSON schemas used for stable reviewer outputs.
@@ -123,6 +131,8 @@ Current scripts:
 - `build_editor_input.py`
 - `check_final_report.py`
 - `review_paper.py`
+
+To add another reviewer, add `.codex/agents/<name>.toml`, add a matching prompt template under `prompts/templates/`, and add one enabled entry to `config/reviewers.json`.
 
 ## Environment Assumptions
 
@@ -157,7 +167,7 @@ Use an explicit paper ID when needed:
 python scripts\review_paper.py --pdf inputs\paper2.pdf --paper-id paper2
 ```
 
-The wrapper currently runs a fresh pipeline and executes the five reviewers in parallel. It has passed end-to-end smoke tests on `paper1` and `paper2`. The manual steps below remain useful for debugging or rerunning one stage by hand.
+The wrapper currently runs a fresh pipeline and executes the configured reviewers in parallel. It has passed end-to-end smoke tests on `paper1` and `paper2`. The manual steps below remain useful for debugging or rerunning one stage by hand.
 
 ### 1. Preprocess
 
@@ -184,7 +194,7 @@ python scripts\render_prompts.py `
 
 ### 3. Run Reviewers
 
-The five reviewer agents are:
+The default reviewer agents are configured in `config/reviewers.json`:
 - `crossref_auditor`
 - `numerical_auditor`
 - `claim_evidence_auditor`
@@ -214,7 +224,7 @@ codex --search exec ...
 python scripts\validate_review_json.py --schema schemas\reviewer_output.schema.json --input work\paper1\reviews\crossref_auditor.json
 ```
 
-Repeat for all five reviewer outputs.
+Repeat for all configured reviewer outputs.
 
 ### 5. Normalize and Deduplicate
 
@@ -278,6 +288,7 @@ Usually track:
 - `.codex/config.toml`
 - `.codex/agents/*.toml`
 - `.agents/skills/paper-reviewer/SKILL.md`
+- `config/reviewers.json`
 - `prompts/templates/*.txt`
 - `schemas/*.json`
 - `scripts/*.py`

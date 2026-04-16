@@ -7,6 +7,7 @@ This file records what has been built, what has been tested, and what remains fo
 - Repo guidance exists in `AGENTS.md`.
 - Project Codex defaults exist in `.codex/config.toml`.
 - Custom agents exist under `.codex/agents/`.
+- The enabled reviewer roster is configured in `config/reviewers.json`.
 - The repo-scoped paper-reviewer skill exists under `.agents/skills/paper-reviewer/`.
 - PDF preprocessing is implemented in `scripts/preprocess_pdf.py`.
 - Reviewer JSON validation is implemented in `scripts/validate_review_json.py`.
@@ -47,7 +48,7 @@ The automated fresh-run entry point is:
 python scripts\review_paper.py --pdf inputs\paper2.pdf
 ```
 
-It preprocesses, renders prompts, runs the five reviewers in parallel, validates reviewer JSON, normalizes, builds editor input, runs the editor, and smoke-checks the final report.
+It preprocesses, renders prompts, runs the configured reviewers in parallel, validates reviewer JSON, normalizes, builds editor input, runs the editor, and smoke-checks the final report.
 
 ```powershell
 python scripts\preprocess_pdf.py --pdf inputs\paper1.pdf
@@ -59,7 +60,7 @@ python scripts\render_prompts.py `
   --schema-path schemas\reviewer_output.schema.json `
   --output-dir work\paper1\prompts
 
-# Run the five reviewer prompts with codex exec and --output-last-message.
+# Run the configured reviewer prompts with codex exec and --output-last-message.
 # Validate each reviewer JSON.
 
 python scripts\normalize_review_outputs.py `
