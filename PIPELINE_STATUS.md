@@ -11,6 +11,7 @@ This file records what has been built, what has been tested, and what remains fo
 - The repo-scoped paper-reviewer skill exists under `.agents/skills/paper-reviewer/`.
 - PDF preprocessing is implemented in `scripts/preprocess_pdf.py`.
 - Reviewer JSON validation is implemented in `scripts/validate_review_json.py`.
+- Reviewer validation now includes semantic contract checks for stable IDs, issue type, confidence, location precision, source objects, cannot-verify reasons, and numerical recomputation notes.
 - Reusable reviewer/editor prompt templates live under `prompts/templates/`.
 - Run-specific prompt rendering is implemented in `scripts/render_prompts.py`.
 - Reviewer normalization/deduplication is implemented in `scripts/normalize_review_outputs.py`.
