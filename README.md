@@ -8,7 +8,7 @@ This repo is both:
 
 The goal is not to build a polished product immediately. The goal is to learn a workflow with repo guidance, project-scoped config, custom agents, repo-scoped skills, `codex exec`, JSON schemas, deterministic preprocessing, validation, and editor synthesis.
 
-Current status: the pipeline was first proven manually on `inputs/paper1.pdf`, and `scripts/review_paper.py` passed end-to-end smoke tests on both `paper1` and `paper2` before parser-quality preflight gating was added. The generated reviewer JSON files validated, the normalized editor bundles were built, the editor produced final markdown reports, and the reports passed `scripts/check_final_report.py`. The parser-quality auditor is now integrated as a preflight stage and should be included in the next full smoke run.
+Current status: `scripts/review_paper.py` is the default fresh-run entry point. The workflow has been proven manually on `paper1`, smoke-tested end to end on `paper1` and `paper2`, and tested on `paper4` with parser-quality preflight, dynamic reviewer selection, selected optional reviewers, editor synthesis, and final report checking. `paper4` was also used to test editor-only report refreshes from an existing normalized bundle and reviewer JSON files.
 
 ## Mental Model
 
@@ -40,13 +40,16 @@ The intended flow is:
 2. render run-specific prompts
 3. run the parser-quality preflight auditor
 4. validate preflight JSON and fail only on high-confidence blocking parser defects
-5. run reviewer agents on parsed artifacts
-6. validate reviewer JSON
-7. normalize and deduplicate reviewer outputs
-8. build editor input
-9. run the editor
-10. write the final markdown report
-11. smoke-check the final report
+5. classify the paper and select optional reviewers, unless static mode is requested
+6. write the run-specific selected reviewer roster
+7. rerender prompts for the selected reviewer roster
+8. run mandatory baseline reviewers and selected optional reviewers on parsed artifacts
+9. validate reviewer JSON
+10. normalize and deduplicate reviewer outputs
+11. build editor input with a deterministic editor brief
+12. run the editor
+13. write the final markdown report
+14. smoke-check the final report
 
 For fresh runs, `scripts/review_paper.py` is the default entry point for this flow.
 
@@ -196,7 +199,7 @@ git status
 For a fully automated fresh run, use:
 
 ```powershell
-python scripts\review_paper.py --pdf inputs\paper2.pdf
+python scripts\review_paper.py --pdf inputs\paper4.pdf
 ```
 
 This derives `paper_id` from the PDF filename, writes intermediate artifacts under `work/<paper_id>/`, writes the final report to `outputs/<paper_id>/report.md`, and stores subprocess logs under `work/<paper_id>/logs/`. By default, the wrapper uses dynamic reviewer selection: parser preflight runs first, mandatory baseline reviewers always run, and optional reviewers are selected for the paper type.
@@ -204,16 +207,48 @@ This derives `paper_id` from the PDF filename, writes intermediate artifacts und
 Use an explicit paper ID when needed:
 
 ```powershell
-python scripts\review_paper.py --pdf inputs\paper2.pdf --paper-id paper2
+python scripts\review_paper.py --pdf inputs\paper4.pdf --paper-id paper4
 ```
 
 Use static mode to run all enabled reviewers without selector filtering:
 
 ```powershell
-python scripts\review_paper.py --pdf inputs\paper2.pdf --reviewer-selection static
+python scripts\review_paper.py --pdf inputs\paper4.pdf --reviewer-selection static
 ```
 
-The wrapper currently runs a fresh pipeline, executes preflight reviewers first, selects or preserves review-stage reviewers, and then executes the active review-stage reviewers in parallel. It passed end-to-end smoke tests on `paper1` and `paper2` before parser-quality preflight gating was added. The manual steps below remain useful for debugging or rerunning one stage by hand.
+The wrapper runs a fresh pipeline, executes preflight reviewers first, selects or preserves review-stage reviewers, rerenders prompts for the selected roster, and then executes the active review-stage reviewers in parallel. The manual steps below remain useful for debugging or rerunning one stage by hand.
+
+### Editor-Only Refresh
+
+If preprocessing, reviewer JSON, `work/<paper_id>/selection/selected_reviewers.json`, and `work/<paper_id>/editor/normalized_bundle.json` already exist, rerun only the editor when prompt/report-shape changes do not require new reviewer evidence:
+
+```powershell
+python scripts\render_prompts.py `
+  --paper-id paper4 `
+  --parsed-dir work\paper4\parsed `
+  --reviews-dir work\paper4\reviews `
+  --schema-path schemas\reviewer_output.schema.json `
+  --output-dir work\paper4\prompts `
+  --editor-bundle-path work\paper4\editor\normalized_bundle.json `
+  --reviewers-config work\paper4\selection\selected_reviewers.json
+
+python scripts\build_editor_input.py `
+  --paper-id paper4 `
+  --editor-prompt work\paper4\prompts\editor_report.txt `
+  --bundle work\paper4\editor\normalized_bundle.json `
+  --reviews-dir work\paper4\reviews `
+  --output work\paper4\editor\editor_input.md `
+  --reviewers-config work\paper4\selection\selected_reviewers.json
+
+Get-Content work\paper4\editor\editor_input.md -Raw |
+  codex exec --output-last-message outputs\paper4\report.md -
+
+python scripts\check_final_report.py `
+  --input outputs\paper4\report.md `
+  --bundle work\paper4\editor\normalized_bundle.json
+```
+
+This does not rerun preprocessing, reviewer selection, or reviewer agents. It is appropriate for editor prompt changes, report presentation changes, or regenerating a report from the same evidence bundle.
 
 ### 1. Preprocess
 
@@ -237,6 +272,20 @@ python scripts\render_prompts.py `
   --schema-path schemas\reviewer_output.schema.json `
   --output-dir work\paper1\prompts
 ```
+
+In dynamic wrapper runs, prompts are rendered once before preflight and then rendered again after selection with:
+
+```powershell
+python scripts\render_prompts.py `
+  --paper-id paper1 `
+  --parsed-dir work\paper1\parsed `
+  --reviews-dir work\paper1\reviews `
+  --schema-path schemas\reviewer_output.schema.json `
+  --output-dir work\paper1\prompts `
+  --reviewers-config work\paper1\selection\selected_reviewers.json
+```
+
+If you are debugging a static run rather than a dynamic selected run, use `config/reviewers.json` anywhere these manual examples pass `work\<paper_id>\selection\selected_reviewers.json`.
 
 ### 3. Run Reviewers
 
@@ -287,7 +336,8 @@ Repeat for all configured reviewer outputs.
 python scripts\normalize_review_outputs.py `
   --paper-id paper1 `
   --reviews-dir work\paper1\reviews `
-  --output work\paper1\editor\normalized_bundle.json
+  --output work\paper1\editor\normalized_bundle.json `
+  --reviewers-config work\paper1\selection\selected_reviewers.json
 ```
 
 The normalized bundle groups overlapping findings, separates parser artifacts from manuscript issues, and removes process notes from editor-facing synthesis.
@@ -300,7 +350,8 @@ python scripts\build_editor_input.py `
   --editor-prompt work\paper1\prompts\editor_report.txt `
   --bundle work\paper1\editor\normalized_bundle.json `
   --reviews-dir work\paper1\reviews `
-  --output work\paper1\editor\editor_input.md
+  --output work\paper1\editor\editor_input.md `
+  --reviewers-config work\paper1\selection\selected_reviewers.json
 ```
 
 This writes a deterministic editor brief before the raw JSON inputs. The brief gives the editor internal guidance on optional reviewer selection, the top five high-priority synthesis candidates, additional-finding candidates, section routing, and traceability-map rows. The brief is not intended to be reproduced as report text.
@@ -313,6 +364,7 @@ Get-Content work\paper1\editor\editor_input.md -Raw |
 ```
 
 The editor must write the actual final markdown report, not a note saying where the report was saved.
+The wrapper rejects implausibly short editor outputs and can recover a complete report from the editor transcript if `codex exec --output-last-message` captures a short acknowledgement after a delegated editor response.
 The report should keep canonical and source finding IDs out of the main prose and collect them in a final traceability appendix, such as:
 
 ```markdown
@@ -327,10 +379,11 @@ The intended report structure starts with synthesis and keeps audit metadata com
 - `## Highest-Priority Cross-Agent Findings`
 - `## Suggested Revision Priorities`
 - `## Additional Findings`
-- domain-specific sections for literature, references, parser caveats, cannot-verify items, and grammar appendix when applicable
+- domain-specific sections for literature, references, parser caveats, and cannot-verify items
+- `## Appendix: Grammar and Copyediting Issues` when copyedit findings exist
 - `## Appendix: Traceability Map`
 
-The highest-priority section should stay selective. Lower-priority substantive issues and cannot-verify items should use compact tables where possible.
+The highest-priority section is capped at five synthesis findings by `scripts/build_editor_input.py`. Lower-priority substantive issues go to `Additional Findings`, cannot-verify items should use a compact table, and all canonical/source IDs should appear in the traceability appendix rather than repeated body footers.
 
 ### 8. Check Final Report
 
@@ -351,7 +404,7 @@ The final report checker rejects reports that are too short, look like run-statu
 - Final reports need traceability identifiers, but they read better when those identifiers live in one appendix instead of repeated body footers.
 - PowerShell `>` redirection is risky for JSON outputs on Windows; prefer `--output-last-message`.
 - The wrapper script preserves the proven sequence and runs reviewer jobs in parallel.
-- A second-paper smoke test is valuable because it catches stale assumptions that a single proof run can hide; `paper2` now gives the wrapper that broader check.
+- Multi-paper smoke tests are valuable because they catch stale assumptions that a single proof run can hide; `paper4` added coverage for dynamic optional reviewer selection and editor-only refreshes.
 
 ## Git Hygiene
 
