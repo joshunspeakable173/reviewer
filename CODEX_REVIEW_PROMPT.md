@@ -2,10 +2,9 @@ Review this repo as a Codex workflow, not just as a codebase.
 
 Context:
 - This repo is a local Windows/PowerShell project for a multi-agent academic paper reviewer.
-- The pipeline was first proven manually on `inputs/paper1.pdf`.
-- `scripts/review_paper.py` is the automated wrapper around that proven flow and has passed end-to-end smoke tests on `paper1`, `paper2`, and `paper4`.
+- `scripts/review_paper.py` is the automated wrapper around the proven review flow and has passed end-to-end smoke tests across multiple papers.
 - The current default wrapper mode uses parser-quality preflight and dynamic reviewer selection. Mandatory reviewers always run; optional conceptual reviewers are selected based on paper type.
-- `paper4` has also been used to test editor-only refresh from existing reviewer JSON and `normalized_bundle.json`.
+- Editor-only refresh has also been tested from existing reviewer JSON and `normalized_bundle.json`.
 - The proven flow is:
   1. preprocess PDF
   2. render run-specific prompts

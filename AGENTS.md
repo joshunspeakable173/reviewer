@@ -26,7 +26,7 @@ The normal workflow is:
 - Final reports: `outputs/<paper_id>/`
 
 ## Path conventions
-- If the user refers to `paper1.pdf`, first resolve it as `inputs/paper1.pdf`.
+- If the user refers to a bare source PDF filename, first resolve it under `inputs/`.
 - Prefer project-relative paths over absolute paths when possible.
 - Do not assume a file is outside the repo unless the user explicitly says so.
 
