@@ -19,12 +19,14 @@ This file records what has been built, what has been tested, and what remains fo
 - Run-specific prompt rendering is implemented in `scripts/render_prompts.py`.
 - Dynamic reviewer selection writes `work/<paper_id>/selection/reviewer_selection.json` and `work/<paper_id>/selection/selected_reviewers.json`.
 - Reviewer normalization/deduplication is implemented in `scripts/normalize_review_outputs.py`.
-- Editor input assembly is implemented in `scripts/build_editor_input.py`, including a deterministic editor brief for concise reviewer disclosure, priority scoring with a five-item synthesis cap, additional-finding candidates, section routing, and traceability-map rows.
+- Editor input assembly is implemented in `scripts/build_editor_input.py`, including a deterministic editor brief for concise reviewer disclosure, priority scoring with an eight-item maximum for synthesis candidates, additional-finding candidates, section routing, and traceability-map rows.
 - Final report smoke checking is implemented in `scripts/check_final_report.py`.
 - Final report smoke checking now requires the grammar appendix heading when normalized copyedit findings are present and the traceability appendix when a normalized bundle is supplied.
 - Full pipeline orchestration is implemented in `scripts/review_paper.py`, including parser-quality preflight gating.
 - Editor-only report refresh is supported manually by rerendering prompts, rebuilding editor input from an existing normalized bundle and reviewer JSON files, rerunning the editor, and smoke-checking the report.
 - The wrapper now detects implausibly short editor outputs and recovers the complete report from the editor transcript when `codex exec --output-last-message` captures a short acknowledgement after delegated editor output.
+- The editor prompt now asks for 3 to 8 high-confidence top-level synthesis issues when supported by the evidence, preserves concrete study names in literature critiques, and adds an external-sources appendix when external evidence is cited in the report body.
+- The external-sources appendix is guarded against hallucinated metadata: it should use only details present in reviewer evidence and leave missing bibliographic details blank or marked as not provided.
 
 ## Smoke-Tested So Far
 
@@ -46,6 +48,7 @@ This file records what has been built, what has been tested, and what remains fo
 - Raw-caption fallback crops are conservative because exact caption/body coordinates are not available from raw text.
 - Normalization uses deterministic heuristics and should be revisited as more papers are tested.
 - The first successful-looking editor report omitted canonical/source finding IDs and failed the final report check. The editor prompt template now requires a traceability appendix rather than repeated body footers.
+- The final report checker verifies report shape and traceability identifiers, but it does not independently verify external references or registry links.
 - Generated artifacts under `work/` and `outputs/` are ignored by Git, so successful proof-run outputs must be regenerated or preserved outside Git if needed.
 
 ## Current Best Workflow
