@@ -136,7 +136,7 @@ This catches common output failures while keeping substantive judgment in the re
 | `abstract_conclusion_consistency_auditor` | review | optional | manuscript | no | `abstract_conclusion_consistency_auditor.json` | Checks abstract, introduction, and conclusion claims against the body. |
 | `limitations_external_validity_auditor` | review | optional | manuscript | no | `limitations_external_validity_auditor.json` | Checks limitations, scope, policy claims, and external validity. |
 | `model_equation_auditor` | review | optional | manuscript | no | `model_equation_auditor.json` | Checks model notation, equations, assumptions, and text-equation consistency. |
-| `data_availability_replication_auditor` | review | optional | manuscript | no | `data_availability_replication_auditor.json` | Checks data availability, code availability, replication, and reproducibility statements. |
+| `data_availability_replication_auditor` | review | optional | manuscript | yes | `data_availability_replication_auditor.json` | Checks preregistration, pre-analysis-plan documentation, planned-vs-reported analyses, and scoped reproducibility claims. |
 
 ## 12. Current Limitations
 
@@ -304,7 +304,7 @@ Selection rules:
 - Select abstract_conclusion_consistency_auditor when abstract/introduction/conclusion claims appear important enough to check against the body.
 - Select limitations_external_validity_auditor for papers making policy, welfare, generalizability, or scope claims.
 - Select model_equation_auditor for theory, structural, model-heavy, equation-heavy, or methods papers.
-- Select data_availability_replication_auditor for empirical papers with data/code availability, replication, or reproducibility claims.
+- Select data_availability_replication_auditor for experiments, RCTs, preregistered or pre-planned empirical designs, explicit pre-analysis-plan claims, registry links or IDs, or concrete replication/reproducibility claims. Treat mentions of platforms such as AEA RCT Registry, OSF Registries, AsPredicted, and similar services as strong selection cues.
 
 When unsure, prefer selecting a reviewer if its audit would catch high-impact errors and the parsed artifacts contain enough material to inspect.
 ````
@@ -372,6 +372,8 @@ Focus on:
 - characterization of prior work
 - conservative verification
 - cannot_verify when verification is not possible
+
+Ground critiques in concrete studies. A finding that says a novelty claim is overstated, that prior literature already covers an issue, or that the manuscript mischaracterizes a literature must cite specific studies or external sources in source_objects. If a broad novelty claim cannot be verified or contradicted with concrete studies, use cannot_verify rather than asserting lack of novelty.
 
 For every finding:
 - Set issue_type to manuscript_issue or cannot_verify.
@@ -612,7 +614,7 @@ Use the custom agent named data_availability_replication_auditor.
 
 Use the repo guidance and the paper-reviewer workflow.
 
-Audit data availability, code availability, replication, and reproducibility statements only:
+Audit preregistration, pre-analysis-plan documentation, planned-vs-reported analyses, and scoped reproducibility claims only:
 `{parsed_dir}`
 
 Return one JSON object that strictly conforms to:
@@ -624,10 +626,15 @@ For this run:
 - finding IDs must be stable and formatted REPL-001, REPL-002, ...
 
 Focus on:
-- data and code availability statements
-- replication package claims
-- consistency between reproducibility statements and empirical analysis
-- missing or vague reproducibility details when the paper claims empirical results can be replicated
+- whether experiments, RCTs, surveys, or other prospectively planned empirical designs identify preregistrations or pre-analysis plans
+- registry records, pre-analysis plans, or preregistration materials linked or explicitly identified by the manuscript
+- consistency between planned and reported samples, exclusions, treatment arms, outcomes, estimands, specifications, weighting, and robustness checks
+- whether deviations from the plan are disclosed clearly enough for readers to distinguish planned analyses from exploratory or changed analyses
+- data, code, or replication-package claims only when the manuscript makes a concrete availability/reproducibility claim, a directly relevant availability statement is at issue, or missing materials prevent checking a material planned-vs-reported issue
+
+Treat AEA RCT Registry, OSF Registries, AsPredicted, and similar preregistration platforms as common non-exhaustive examples. If the manuscript provides registry URLs, DOIs, or explicit registry IDs, inspect those linked records when needed for the audit. Do not perform broad web searches for undisclosed plans.
+
+Report only material, high-confidence issues. Do not manufacture checklist findings from minor omissions.
 
 For every finding:
 - Set issue_type to manuscript_issue, parser_artifact, or cannot_verify.
@@ -637,6 +644,7 @@ For every finding:
 - Include source_objects for data/code statements, empirical sections, appendix material, or parsed artifacts.
 - Include claim_evidence_links when comparing reproducibility claims to manuscript evidence.
 - Use cannot_verify only when artifacts do not allow a check, and include cannot_verify_reason.
+- For registry lookup findings, cite both the manuscript claim and the linked external registry or pre-analysis-plan source. If a linked record is inaccessible, ambiguous, or insufficient, mark the relevant point cannot_verify rather than guessing.
 
 Do not include process notes about skill availability, tooling, or session state.
 ````
@@ -837,7 +845,7 @@ Hard rules:
 - Use the canonical IDs and source finding IDs exactly as listed in the normalized editor bundle.
 - Include a Review Configuration section in prose, not as a table. Briefly state which optional reviewer agents were used and why; mention mandatory baseline reviewers only briefly. Mention partial or failed reviewer statuses only when they materially limit confidence in the report.
 - Start with cross-agent synthesis. Do not organize any report section by agent.
-- Limit Highest-Priority Cross-Agent Findings to the top five issues recommended by the deterministic editor brief. If more severe-looking issues remain, place them in Additional Findings or the appropriate domain section rather than expanding the highest-priority list.
+- Use the Highest-Priority Cross-Agent Findings section for the strongest high-confidence issues recommended by the deterministic editor brief. Aim for 3 to 8 top-level issues when the evidence supports that range; use fewer than 3 if fewer high-confidence issues exist, and never exceed 8. Place remaining issues in Additional Findings or the appropriate domain section.
 - Use Additional Findings for lower-priority findings that were not elevated to cross-agent synthesis. Do not organize this section by agent.
 - Include a final Appendix: Traceability Map table that maps every canonical finding in the normalized bundle to its source finding IDs.
 
