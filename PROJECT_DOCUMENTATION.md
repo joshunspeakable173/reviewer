@@ -102,11 +102,15 @@ The final report is intentionally not organized agent by agent. It starts with c
 
 Literature-positioning and novelty critiques should preserve the concrete studies or author-year labels that ground the critique. If the report names external studies, registry records, web pages, or other external sources as review evidence, it should include a compact external-sources appendix. That appendix is limited to details already present in reviewer evidence; it must not invent bibliographic metadata, URLs, DOIs, publication years, titles, or source roles.
 
+Parser and preprocessing issues remain a separate class from manuscript issues, but important parser artifacts should not disappear simply because they are routed to the parser-caveats section. When a parser artifact materially distorts interpretation or auditability of a central formula, table, figure, citation target, or quantitative claim, the editor should mention it explicitly in the prose of `Parser and Preprocessing Caveats`, and it can also justify elevation into `Suggested Revision Priorities` when the auditability risk is substantial.
+
 ## 9. Report Checking
 
 The final report checker is a smoke check, not a full semantic review. It rejects outputs that are too short, look like run-status notes, omit required report headings, omit grammar or traceability appendices when needed, or fail to mention canonical/source finding identifiers from the normalized bundle. It does not prove that every external source is real, current, accessible, or correctly characterized.
 
 This catches common output failures while keeping substantive judgment in the reviewer and editor stages.
+
+Recent editor-only reruns on `paper5` and `paper3` were used to validate this separation. The `paper5` rerun showed a clear improvement when the editor prompt was taught not to bury central parser artifacts: a calibration-formula parsing defect that directly affected intercept auditability moved from being mostly traceability-only into visible parser-caveat prose. The same change was roughly neutral to mildly positive on `paper3`, which suggests the guardrail is general enough to keep but not so broad that it overwhelms reports whose main issues are substantive rather than parser-driven.
 
 ## 10. Main Artifacts
 
@@ -139,6 +143,12 @@ This catches common output failures while keeping substantive judgment in the re
 | `limitations_external_validity_auditor` | review | optional | manuscript | no | `limitations_external_validity_auditor.json` | Checks limitations, scope, policy claims, and external validity. |
 | `model_equation_auditor` | review | optional | manuscript | no | `model_equation_auditor.json` | Checks model notation, equations, assumptions, and text-equation consistency. |
 | `data_availability_replication_auditor` | review | optional | manuscript | yes | `data_availability_replication_auditor.json` | Checks preregistration, pre-analysis-plan documentation, planned-vs-reported analyses, and scoped reproducibility claims. |
+| `institutional_context_auditor` | review | optional pilot | manuscript | yes | `institutional_context_auditor.json` | Checks material legal, regulatory, platform, market-design, institutional, and event-context claims. |
+| `power_multiple_testing_auditor` | review | optional pilot | manuscript | no | `power_multiple_testing_auditor.json` | Checks power, multiplicity, outcome families, exploratory status, and strong null-effect claims. |
+| `design_randomization_auditor` | review | optional pilot | manuscript | no | `design_randomization_auditor.json` | Checks treatment assignment, post-assignment attrition, omitted arms, spillovers, contamination, and implementation fidelity. |
+| `economic_magnitude_auditor` | review | optional pilot | manuscript | no | `economic_magnitude_auditor.json` | Checks practical significance, economic magnitude, baselines, units, denominators, WTP, welfare, cost, and calibration interpretation. |
+
+The pilot reviewers are intentionally narrow. They should be selected only when a paper contains strong cues for their risk area, and they should not produce generic documentation or presentation comments.
 
 ## 12. Current Limitations
 
@@ -307,8 +317,12 @@ Selection rules:
 - Select limitations_external_validity_auditor for papers making policy, welfare, generalizability, or scope claims.
 - Select model_equation_auditor for theory, structural, model-heavy, equation-heavy, or methods papers.
 - Select data_availability_replication_auditor for experiments, RCTs, preregistered or pre-planned empirical designs, explicit pre-analysis-plan claims, registry links or IDs, or concrete replication/reproducibility claims. Treat mentions of platforms such as AEA RCT Registry, OSF Registries, AsPredicted, and similar services as strong selection cues.
+- Select institutional_context_auditor only when material legal, regulatory, platform, market-design, institutional-process, voting-rule, or event-context claims affect interpretation and targeted external verification would add value.
+- Select power_multiple_testing_auditor only when empirical results involve preregistrations, many outcomes, many subgroup tests, many treatment arms, strong null-effect claims, or unclear confirmatory versus exploratory status.
+- Select design_randomization_auditor only for experiments, RCTs, survey experiments, or assigned-treatment designs where treatment assignment, omitted arms, attrition after assignment, spillovers, contamination, carryover, or implementation fidelity could affect interpretation.
+- Select economic_magnitude_auditor only when the paper makes welfare, willingness-to-pay, cost, calibration, investment-share, policy-magnitude, practical-significance, or "economically large" claims.
 
-When unsure, prefer selecting a reviewer if its audit would catch high-impact errors and the parsed artifacts contain enough material to inspect.
+When unsure, prefer selecting a mature reviewer if its audit would catch high-impact errors and the parsed artifacts contain enough material to inspect. For pilot reviewers, require a clear selection cue and a plausible material issue class; do not select them merely because they could make generic documentation or presentation suggestions.
 ````
 
 ### C.3 Reviewer Prompts
@@ -414,6 +428,7 @@ Focus on:
 - notation definitions and reuse
 - equation signs, variables, assumptions, constraints, and interpretation
 - consistency between propositions, text, tables, figures, and equations
+- notation or definition drift between model text, calibration tables, table notes, and appendix formulas
 - model claims that do not follow from the displayed setup
 
 For every finding:
@@ -450,6 +465,7 @@ Focus on:
 - numeric claims in text versus tables/figures/appendix
 - sign, scale, units, rounding
 - percentage versus percentage-point distinctions
+- absolute versus relative effects, standardized units, raw versus normalized values, and practical-magnitude language when numeric scale affects interpretation
 - cannot_verify when parsed artifacts are insufficient
 
 For every finding:
@@ -461,6 +477,8 @@ For every finding:
 - Use cannot_verify only when the artifact does not allow a check, and then include cannot_verify_reason.
 
 When a finding may overlap with claim_evidence_auditor, state the numeric defect cleanly so the editor can deduplicate it.
+
+When a finding is mainly about economic magnitude rather than arithmetic, report it only if the scale, baseline, denominator, or unit materially changes the interpretation.
 
 Do not include process notes about skill availability, tooling, or session state.
 ````
@@ -487,6 +505,10 @@ Focus on:
 - robustness checks versus main claims
 - alternative specifications, controls, subsamples, placebo tests, sensitivity analysis, and appendix validations
 - cases where a paper says results are robust but the supporting evidence is mixed, missing, or narrower
+- subgroup, heterogeneity, moderator, interaction, or split-sample claims when the paper interprets differences across groups
+- whether "larger for group X," "equally pronounced," or "persists across groups" claims are supported by direct subgroup estimates, interaction tests, or appropriate descriptive caveats
+
+Do not make generic requests for more subgroup analysis. Report heterogeneity issues only when the manuscript makes a substantive subgroup claim or a pre-analysis plan commits to a subgroup analysis that is not clearly reported.
 
 For every finding:
 - Set issue_type to manuscript_issue, parser_artifact, or cannot_verify.
@@ -522,6 +544,8 @@ Focus on:
 - sample restrictions, exclusions, attrition, denominators, missingness, and observation counts
 - variable definitions and transformations
 - consistency between data section, tables, figures, appendices, and result interpretation
+- whether claims use person-level, observation-level, account-level, scenario-level, or time-weighted quantities consistently
+- whether table and figure denominators or conditioning samples are clear enough for the claims they support
 
 For every finding:
 - Set issue_type to manuscript_issue, parser_artifact, or cannot_verify.
@@ -558,6 +582,7 @@ Focus on:
 - stale summary language after edits
 - missing caveats in summary sections
 - conclusion or policy statements that exceed the reported evidence
+- summary claims that translate measured survey, proxy, platform, or experimental quantities into broader real-world behavior, welfare, mechanism, or population claims
 
 For every finding:
 - Set issue_type to manuscript_issue, parser_artifact, or cannot_verify.
@@ -594,6 +619,8 @@ Focus on:
 - overstatement
 - weak support
 - missing support
+- construct or treatment labels that make the claim broader than the measured object
+- exact textual claims that cite figures or tables which do not display the needed comparison, denominator, label, or value
 - cannot_verify when artifacts do not allow a check
 
 For every finding:
@@ -605,6 +632,8 @@ For every finding:
 - Use cannot_verify only when the artifact does not allow a check, and then include cannot_verify_reason.
 
 If a finding overlaps with a numerical issue, focus on the interpretation/evidence problem and avoid repeating the full arithmetic diagnosis unless it adds new value.
+
+If a finding is mainly about a label or definition, report it only when the label materially changes the claim's meaning, such as "majority" versus time share, "support" versus affirmative binary support, or "voice" used for different treatment arms.
 
 Do not include process notes about skill availability, tooling, or session state.
 ````
@@ -631,6 +660,7 @@ Focus on:
 - whether experiments, RCTs, surveys, or other prospectively planned empirical designs identify preregistrations or pre-analysis plans
 - registry records, pre-analysis plans, or preregistration materials linked or explicitly identified by the manuscript
 - consistency between planned and reported samples, exclusions, treatment arms, outcomes, estimands, specifications, weighting, and robustness checks
+- consistency between planned and reported outcome families, subgroup analyses, exploratory versus confirmatory analyses, and omitted or collapsed treatment arms
 - whether deviations from the plan are disclosed clearly enough for readers to distinguish planned analyses from exploratory or changed analyses
 - data, code, or replication-package claims only when the manuscript makes a concrete availability/reproducibility claim, a directly relevant availability statement is at issue, or missing materials prevent checking a material planned-vs-reported issue
 
@@ -647,6 +677,160 @@ For every finding:
 - Include claim_evidence_links when comparing reproducibility claims to manuscript evidence.
 - Use cannot_verify only when artifacts do not allow a check, and include cannot_verify_reason.
 - For registry lookup findings, cite both the manuscript claim and the linked external registry or pre-analysis-plan source. If a linked record is inaccessible, ambiguous, or insufficient, mark the relevant point cannot_verify rather than guessing.
+
+Do not include process notes about skill availability, tooling, or session state.
+````
+
+#### `institutional_context_audit.txt`
+
+````text
+Use the custom agent named institutional_context_auditor.
+
+Use the repo guidance and the paper-reviewer workflow.
+
+Audit material institutional, legal, regulatory, platform, market-design, and event-context claims only:
+`{parsed_dir}`
+
+Return one JSON object that strictly conforms to:
+`{schema_path}`
+
+For this run:
+- reviewer = "institutional_context_auditor"
+- paper_id = "{paper_id}"
+- finding IDs must be stable and formatted INST-001, INST-002, ...
+
+Focus on:
+- institutional facts that materially affect the design, measurement, interpretation, or policy implication
+- legal, regulatory, voting-rule, platform-rule, market-structure, implementation-process, or event-timing claims
+- cases where a manuscript's institutional description is incomplete, stale, overgeneralized, or inconsistent with authoritative sources
+
+Use targeted web checks only when a material institutional/context claim needs external verification. Prefer authoritative primary sources such as laws, regulator pages, official platform documentation, official institutional statements, or stable public records. Do not perform broad background research, add trivia, or report institutional details that do not affect interpretation.
+
+Report only material, high-confidence issues. If no material institutional-context issue is found, return run_status ok with an empty findings array.
+
+For every finding:
+- Set issue_type to manuscript_issue, parser_artifact, or cannot_verify.
+- Set category to institutional_context_mismatch, regulatory_context_incomplete, legal_authority_mismatch, platform_or_market_structure_mismatch, event_timing_problem, or cannot_verify.
+- Set confidence to high, medium, or low.
+- Set location.precision to exact, partial, or missing.
+- Include source_objects for both the manuscript claim and any external source used.
+- Include claim_evidence_links when comparing institutional claims to manuscript or external evidence.
+- Use cannot_verify only when artifacts or external sources do not allow a check, and include cannot_verify_reason.
+
+Do not include process notes about skill availability, tooling, search activity, or session state.
+````
+
+#### `power_multiple_testing_audit.txt`
+
+````text
+Use the custom agent named power_multiple_testing_auditor.
+
+Use the repo guidance and the paper-reviewer workflow.
+
+Audit power, outcome-family, multiplicity, exploratory-versus-confirmatory status, and strong null-effect interpretation only:
+`{parsed_dir}`
+
+Return one JSON object that strictly conforms to:
+`{schema_path}`
+
+For this run:
+- reviewer = "power_multiple_testing_auditor"
+- paper_id = "{paper_id}"
+- finding IDs must be stable and formatted POWER-001, POWER-002, ...
+
+Focus on:
+- power or minimum-detectable-effect claims
+- outcome families, many outcomes, many subgroup tests, many treatment arms, or many robustness/specification checks
+- whether emphasized outcomes match preregistered or clearly declared primary outcomes
+- whether results are presented as confirmatory, secondary, exploratory, descriptive, or supplementary in a way that matches the design and pre-analysis plan
+- strong null-effect language such as "no effect" or mechanism claims based on null results without detectable-effect, equivalence, or power calibration
+
+Report only material interpretation risks. Do not make generic "many tests" complaints when the manuscript uses aggregate tests, clearly labels descriptive evidence, or does not rely on the multiplicity-sensitive result for a substantive claim. If no material issue is found, return run_status ok with an empty findings array.
+
+For every finding:
+- Set issue_type to manuscript_issue, parser_artifact, or cannot_verify.
+- Set category to power_claim_unsupported, multiple_testing_overstatement, outcome_family_unclear, exploratory_result_overemphasized, null_effect_overinterpreted, or cannot_verify.
+- Set confidence to high, medium, or low.
+- Set location.precision to exact, partial, or missing.
+- Include source_objects for power discussions, outcome lists, tables, figures, appendices, preregistration material, or inferential claims.
+- Include claim_evidence_links when comparing claims to tables, figures, or preregistration evidence.
+- Use cannot_verify only when artifacts do not allow a check, and include cannot_verify_reason.
+
+Do not include process notes about skill availability, tooling, or session state.
+````
+
+#### `design_randomization_audit.txt`
+
+````text
+Use the custom agent named design_randomization_auditor.
+
+Use the repo guidance and the paper-reviewer workflow.
+
+Audit experimental assignment, randomization, treatment implementation, and post-assignment threats only:
+`{parsed_dir}`
+
+Return one JSON object that strictly conforms to:
+`{schema_path}`
+
+For this run:
+- reviewer = "design_randomization_auditor"
+- paper_id = "{paper_id}"
+- finding IDs must be stable and formatted RAND-001, RAND-002, ...
+
+Focus on:
+- randomization unit, assignment mechanism, clustering, blocking, balance, and post-assignment attrition
+- omitted randomized arms, unexplained treatment-arm exclusions, or mismatch between planned and reported arms
+- spillovers, interference, noncompliance, contamination, carryover, priming, or implementation-fidelity concerns
+- whether design details are sufficient to interpret treatment effects
+
+Report only material issues that affect treatment interpretation. Do not flag non-experimental papers merely for lacking randomization details, and do not turn every missing balance table into a finding. If the audit is not applicable or no material issue is found, return run_status ok with an empty findings array.
+
+For every finding:
+- Set issue_type to manuscript_issue, parser_artifact, or cannot_verify.
+- Set category to randomization_detail_missing, assignment_unit_mismatch, post_assignment_attrition, omitted_randomized_arm, contamination_or_carryover, or cannot_verify.
+- Set confidence to high, medium, or low.
+- Set location.precision to exact, partial, or missing.
+- Include source_objects for design descriptions, preregistration or appendix material, balance tables, attrition tables, treatment-arm descriptions, or implementation details.
+- Include claim_evidence_links when comparing design claims to evidence.
+- Use cannot_verify only when artifacts do not allow a check, and include cannot_verify_reason.
+
+Do not include process notes about skill availability, tooling, or session state.
+````
+
+#### `economic_magnitude_audit.txt`
+
+````text
+Use the custom agent named economic_magnitude_auditor.
+
+Use the repo guidance and the paper-reviewer workflow.
+
+Audit economic magnitude and practical-significance interpretation only:
+`{parsed_dir}`
+
+Return one JSON object that strictly conforms to:
+`{schema_path}`
+
+For this run:
+- reviewer = "economic_magnitude_auditor"
+- paper_id = "{paper_id}"
+- finding IDs must be stable and formatted MAG-001, MAG-002, ...
+
+Focus on:
+- whether effect-size and practical-significance claims match appropriate baselines, units, populations, denominators, and scales
+- welfare, willingness-to-pay, cost, calibration, investment-share, policy-magnitude, or materiality claims
+- absolute versus relative effects, percent versus percentage-point changes, standardized units, raw versus normalized values, and aggregation levels
+- practical-significance claims not supported by reported magnitudes
+
+Report only places where magnitude language materially changes interpretation. Do not duplicate arithmetic checks handled by the numerical auditor unless the central problem is interpretation of magnitude. If no material issue is found, return run_status ok with an empty findings array.
+
+For every finding:
+- Set issue_type to manuscript_issue, parser_artifact, or cannot_verify.
+- Set category to magnitude_overstatement, baseline_missing, unit_or_scale_mismatch, practical_significance_unclear, welfare_or_cost_overreach, or cannot_verify.
+- Set confidence to high, medium, or low.
+- Set location.precision to exact, partial, or missing.
+- Include source_objects for magnitude claims, tables, figures, baseline values, sample descriptions, calibration notes, or welfare/cost statements.
+- Include claim_evidence_links when comparing magnitude claims to evidence.
+- Use cannot_verify only when artifacts do not allow a check, and include cannot_verify_reason.
 
 Do not include process notes about skill availability, tooling, or session state.
 ````
@@ -671,9 +855,13 @@ For this run:
 
 Focus on:
 - causal language and whether the design supports it
+- whether target estimands, populations, treatments/exposures, outcomes, timing, and interpretation align
 - stated and unstated identifying assumptions
 - threats to validity, confounding, selection, spillovers, timing, and measurement
+- post-treatment outcomes or parallel outcomes described as mechanisms without mediation evidence
 - whether limitations and interpretation match the identification strategy
+
+Watch for mechanism language such as "driven by," "underlying mechanism," "shows why," "as a result," or "true preference." Flag it only when the design does not identify that mechanism, not as a style preference.
 
 For every finding:
 - Set issue_type to manuscript_issue, parser_artifact, or cannot_verify.
@@ -841,8 +1029,10 @@ Hard rules:
 - Use the deterministic editor brief as the organizing map for prioritization, section routing, optional-reviewer disclosure, and traceability coverage.
 - Treat the deterministic editor brief as internal planning guidance. Do not reproduce run summaries, scoring tables, reviewer-count tables, active-reviewer tables, section-routing tables, or other audit-log metadata in the final report.
 - Merge duplicate findings across reviewers into one canonical issue.
+- When synthesizing, preserve useful lenses from the mature and pilot reviewers: estimand alignment, mechanism versus evidence, construct labels, subgroup support, economic magnitude, randomization/design implementation, and institutional context. Treat these as issue dimensions, not as agent-by-agent report sections.
 - Prioritize high- and medium-severity substantive findings.
 - Separate manuscript issues from parser/preprocessing issues.
+- Do not bury parser/preprocessing issues that materially distort a central formula, table, figure, citation target, or quantitative claim. When such an artifact affects interpretation of a main result or blocks reliable verification of an important claim, mention it explicitly in the prose of the Parser and Preprocessing Caveats section, and elevate it into Suggested Revision Priorities when the auditability risk is substantial.
 - Separate reference-integrity problems from low-severity reference-maintenance updates.
 - Put copyedit_issue findings only in the grammar appendix unless they materially affect the meaning of a substantive issue.
 - Do not silently soften strong reviewer findings.

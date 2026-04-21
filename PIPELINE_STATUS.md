@@ -27,6 +27,9 @@ This file records what has been built, what has been tested, and what remains fo
 - The wrapper now detects implausibly short editor outputs and recovers the complete report from the editor transcript when `codex exec --output-last-message` captures a short acknowledgement after delegated editor output.
 - The editor prompt now asks for 3 to 8 high-confidence top-level synthesis issues when supported by the evidence, preserves concrete study names in literature critiques, and adds an external-sources appendix when external evidence is cited in the report body.
 - The external-sources appendix is guarded against hallucinated metadata: it should use only details present in reviewer evidence and leave missing bibliographic details blank or marked as not provided.
+- The editor prompt now also tells the editor not to bury parser/preprocessing issues when they materially distort a central formula, table, figure, citation target, or quantitative claim; those issues should stay visible in parser-caveat prose and can be elevated into revision priorities when auditability risk is substantial.
+- Four narrow optional pilot reviewers are configured for institutional context, power/multiple testing, design/randomization, and economic magnitude. The selector should use them only when strong paper-specific cues are present.
+- Experimental lenses that were too redundant for standalone reviewers have been merged into mature reviewer prompts as checklist language: estimand alignment, mechanism interpretation, construct labels, subgroup support, display support, terminology, and notation drift.
 
 ## Smoke-Tested So Far
 
@@ -41,6 +44,7 @@ This file records what has been built, what has been tested, and what remains fo
 - Parser-quality caveats are now reportable rather than automatically blocking unless they are high-severity, high-confidence parser artifacts.
 - Editor-only report refresh has been smoke-tested from existing reviewer JSON and normalized bundles.
 - The wrapper has recovered complete editor reports from the editor transcript when `codex exec --output-last-message` captured only a short acknowledgement.
+- Editor-only reruns of `paper5` and `paper3` were used to test the new parser-artifact visibility guardrail. The change was a clear quality improvement for `paper5` and roughly neutral to mildly positive for `paper3`.
 
 ## Known Weaknesses
 
@@ -49,6 +53,8 @@ This file records what has been built, what has been tested, and what remains fo
 - Normalization uses deterministic heuristics and should be revisited as more papers are tested.
 - The first successful-looking editor report omitted canonical/source finding IDs and failed the final report check. The editor prompt template now requires a traceability appendix rather than repeated body footers.
 - The final report checker verifies report shape and traceability identifiers, but it does not independently verify external references or registry links.
+- The editor can still under- or over-emphasize parser caveats, so multi-paper editor-only reruns remain useful when changing the editor prompt.
+- The pilot reviewers may add report length or overlap if selector cues are too broad; compare their incremental value on future runs before treating them as mature reviewers.
 - Generated artifacts under `work/` and `outputs/` are ignored by Git, so successful proof-run outputs must be regenerated or preserved outside Git if needed.
 
 ## Current Best Workflow
