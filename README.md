@@ -29,19 +29,20 @@ Only the project machinery is meant to be shared on GitHub. Source PDFs, parsed 
 
 ## Quick Start
 
-### 1. Clone
+### 1. Get The Repository
 
 ```powershell
 git clone https://github.com/Ingar30/reviewer.git
 cd reviewer
 ```
 
+Git is convenient for cloning and contributing, but it is not required to run the reviewer. You can also download the repository as a ZIP from GitHub and open a shell in the extracted folder.
+
 ### 2. Install Prerequisites
 
 You need:
 
 - Python 3.12 or newer
-- Git
 - Codex CLI installed and authenticated
 - access to the model/search features needed by your reviewer configuration
 
@@ -285,36 +286,6 @@ Add a reviewer by adding:
 3. focused tests when the reviewer changes validation, normalization, routing, or report structure
 
 GitHub Actions runs `python -m unittest` on pushes and pull requests to `main` or `master`.
-
-## Incorporated Improvements and Remaining Cautions
-
-The limitations reviewed in `docs/limitations_branch_recommendations.md` were tested on prior actual paper runs and incorporated into `main` in this order:
-
-1. `experiment/evaluation-harness`
-2. `improve/caption-fallback-diagnostics`
-3. `improve/editor-refresh-helper`
-4. `improve/selector-breadth-gating`
-5. `improve/normalization-source-overlap`
-6. `improve/report-external-source-coverage`
-7. `improve/preprocess-isolated-quality`
-
-The incorporated changes add:
-
-- a prior-run evaluation harness for scoring preprocessing, captions, normalization, report checks, selector breadth, and resume readiness
-- better page-quality diagnostics for sparse or order-risk PDF pages, including isolated `--work-root` preprocessing runs
-- improved raw-caption continuation for split table and figure captions
-- source-object overlap merging for related normalized findings
-- stricter final-report checks for external source URL coverage
-- tighter selector guidance for optional reviewer breadth and pilot reviewer use
-- `scripts/refresh_editor.py` for editor-only refresh when prerequisites already exist
-
-Remaining cautions:
-
-- PDF extraction can still require manual inspection for unusual scans, images, or page layouts.
-- Normalization remains deterministic and should be monitored as more papers are tested.
-- External URL coverage checks improve traceability but do not prove the truth of external references.
-- Selector breadth is gated, but future runs should still watch for zero-finding optional reviewers.
-- Editor-only refresh is appropriate only when reviewer evidence, parsing, reviewer selection, and normalized findings do not need to change.
 
 ## License
 
