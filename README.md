@@ -265,14 +265,35 @@ Add a reviewer by adding:
 
 GitHub Actions runs `python -m unittest` on pushes and pull requests to `main` or `master`.
 
-## Current Limitations
+## Incorporated Improvements and Remaining Cautions
 
-- Complex PDFs can still produce scrambled sorted text on some pages.
-- Raw-caption fallback is conservative because exact caption/body coordinates are not always available.
-- Normalization uses deterministic heuristics and should be revisited as more papers are tested.
-- The final report checker verifies shape and identifiers, not the truth of external references.
-- Pilot reviewers can add length or overlap if selector cues are too broad.
-- Selective rerun/resume support is still manual; use editor-only refresh only when its prerequisites hold.
+The limitations reviewed in `docs/limitations_branch_recommendations.md` were tested on prior actual paper runs and incorporated into `main` in this order:
+
+1. `experiment/evaluation-harness`
+2. `improve/caption-fallback-diagnostics`
+3. `improve/editor-refresh-helper`
+4. `improve/selector-breadth-gating`
+5. `improve/normalization-source-overlap`
+6. `improve/report-external-source-coverage`
+7. `improve/preprocess-isolated-quality`
+
+The incorporated changes add:
+
+- a prior-run evaluation harness for scoring preprocessing, captions, normalization, report checks, selector breadth, and resume readiness
+- better page-quality diagnostics for sparse or order-risk PDF pages, including isolated `--work-root` preprocessing runs
+- improved raw-caption continuation for split table and figure captions
+- source-object overlap merging for related normalized findings
+- stricter final-report checks for external source URL coverage
+- tighter selector guidance for optional reviewer breadth and pilot reviewer use
+- `scripts/refresh_editor.py` for editor-only refresh when prerequisites already exist
+
+Remaining cautions:
+
+- PDF extraction can still require manual inspection for unusual scans, images, or page layouts.
+- Normalization remains deterministic and should be monitored as more papers are tested.
+- External URL coverage checks improve traceability but do not prove the truth of external references.
+- Selector breadth is gated, but future runs should still watch for zero-finding optional reviewers.
+- Editor-only refresh is appropriate only when reviewer evidence, parsing, reviewer selection, and normalized findings do not need to change.
 
 ## License
 
