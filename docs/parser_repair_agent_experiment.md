@@ -6,10 +6,11 @@ Test whether adding another LLM agent after parser-quality preflight can address
 
 ## Implementation Tested
 
-The experiment adds an opt-in parser repair planner:
+The experiment adds an opt-in parser repair planner, with a newer experimental overlay mode:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\review_paper.py --pdf "inputs\my-paper.pdf" --parser-repair plan
+.\.venv\Scripts\python.exe scripts\review_paper.py --pdf "inputs\my-paper.pdf" --parser-repair overlay
 ```
 
 When enabled, the wrapper:
@@ -21,11 +22,14 @@ When enabled, the wrapper:
 5. runs `scripts/run_parser_repair_agent.py`
 6. writes `work/<paper_id>/repair/parser_repair_plan.json`
 7. writes `work/<paper_id>/repair/parser_repair_notes.md`
-8. passes the repair-notes path into reviewer selection and substantive reviewer prompts
+8. in overlay mode, writes `work/<paper_id>/repair/repaired_artifacts/` and `work/<paper_id>/repair/repair_manifest.json`
+9. passes the repair-notes path into reviewer selection and substantive reviewer prompts
 
-The repair planner is conditional. `--parser-repair plan` checks the parser-quality JSON first and invokes the LLM only when high- or medium-severity `parser_artifact` findings are reported. If no such issue is reported, the repair step is skipped.
+The repair planner is conditional. `--parser-repair plan` and `--parser-repair overlay` check the parser-quality JSON first and invoke the LLM only when high- or medium-severity `parser_artifact` findings are reported. If no such issue is reported, the repair step is skipped.
 
-The repair planner uses `schemas/parser_repair_plan.schema.json`. It is asked to cover each high- or medium-severity parser artifact, identify safe fallback artifacts, identify artifacts that should not be primary evidence, and distinguish mitigated issues from issues that still require deterministic preprocessing changes.
+The repair planner uses `schemas/parser_repair_plan.schema.json`. It is asked to cover each high- or medium-severity parser artifact, identify safe fallback artifacts, identify artifacts that should not be primary evidence, and distinguish mitigated issues from issues that still require deterministic preprocessing changes. In overlay mode, it may also include small repaired artifact contents in the JSON plan; the deterministic runner writes those contents under `work/<paper_id>/repair/repaired_artifacts/` and records provenance in `repair_manifest.json`. It never overwrites the canonical parse under `work/<paper_id>/parsed/`.
+
+After the LLM returns the structured plan, the runner applies a narrow deterministic quality pass to generated overlay artifact content. This pass only scans generated overlay strings and small referenced text sources; it does not rescan the full paper. It normalizes common UTF-8/CP1252 mojibake such as `Ã—` or `âˆ—` when the conversion clearly reduces suspicious markers, records before/after scores in `repair_manifest.json`, and leaves warnings in the manifest if suspicious markers remain.
 
 ## Safety Constraint
 
@@ -190,17 +194,18 @@ It should not be described as fully fixing parser issues. In the successful synt
 
 ## Recommendation
 
-Incorporate the parser repair planner as an opt-in experimental step, not as the default reviewer workflow.
+Incorporate the parser repair planner and overlay repair mode as opt-in experimental steps, not as the default reviewer workflow.
 
 Use it when:
 
 - parser-quality preflight reports medium-severity parser artifacts
 - usable fallback artifacts exist
+- overlay mode can make a narrow, evidence-preserving artifact from existing text, image, inventory, words, or blocks
 - the user explicitly approves sending the relevant parsed artifacts to the LLM service, or the run uses synthetic/redacted/local artifacts
 
 Do not rely on it when:
 
-- OCR, table reconstruction, crop regeneration, or page-order repair is required
+- full OCR, complex table reconstruction, crop regeneration, or page-order repair is required
 - no trustworthy fallback artifact exists
 - private parsed artifacts cannot be exported and the user has not explicitly approved the export
 
