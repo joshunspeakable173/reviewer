@@ -29,6 +29,8 @@ The repair planner is conditional. `--parser-repair plan` and `--parser-repair o
 
 The repair planner uses `schemas/parser_repair_plan.schema.json`. It is asked to cover each high- or medium-severity parser artifact, identify safe fallback artifacts, identify artifacts that should not be primary evidence, and distinguish mitigated issues from issues that still require deterministic preprocessing changes. In overlay mode, it may also include small repaired artifact contents in the JSON plan; the deterministic runner writes those contents under `work/<paper_id>/repair/repaired_artifacts/` and records provenance in `repair_manifest.json`. It never overwrites the canonical parse under `work/<paper_id>/parsed/`.
 
+After the LLM returns the structured plan, the runner applies a narrow deterministic quality pass to generated overlay artifact content. This pass only scans generated overlay strings and small referenced text sources; it does not rescan the full paper. It normalizes common UTF-8/CP1252 mojibake such as `Ã—` or `âˆ—` when the conversion clearly reduces suspicious markers, records before/after scores in `repair_manifest.json`, and leaves warnings in the manifest if suspicious markers remain.
+
 ## Safety Constraint
 
 A first live repair-agent run on private prior-paper artifacts was blocked because it would export private parsed-paper artifacts and parser-review outputs to an external service. After explicit user approval, real-paper runs were performed only on papers with reported high- or medium-severity parser artifacts.
